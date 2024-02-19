@@ -1,0 +1,24 @@
+on: [push, pull_request]
+name: Test
+jobs:
+  test:
+    strategy:
+      matrix:
+        goversion: [oldstable, stable]
+        platform: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.platform }}
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ matrix.goversion }}
+        cache: false
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Test
+      run: go test -cover -coverprofile=coverage -covermode=atomic ./...
+    - name: Upload code coverage
+      if: matrix.platform == 'ubuntu-latest' && matrix.goversion=='stable'
+      uses: codecov/codecov-action@v4
+      with:
+        files: ./coverage
